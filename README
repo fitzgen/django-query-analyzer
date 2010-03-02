@@ -1,0 +1,4 @@
+django-query-analyzer
+-----------------------------------
+
+This is the start of the django query analyzer project, a way to introspect the django ORM

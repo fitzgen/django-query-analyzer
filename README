@@ -12,4 +12,4 @@ installation:
     $ ln -s /path/to/django-query-analyzer/query_analyzer query_analyzer
 
 add "query_analyzer" to your installed_apps in settings.py
-add query_analyzer.views.analyze to your urls somewhere
+include query_analyzer.urls in your project's urls.

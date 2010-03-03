@@ -17,6 +17,12 @@
                     <textarea name="sql">{{ sql|safe }}</textarea>
                     <input type="submit" value="Execute" />
                 </dd>
+                <dt>Models</dt>
+                <dd>
+                    <select id="model-select">
+                        <option> -- </option>
+                    </select>
+                </dd>
             </dl>
         </form>
 
@@ -73,6 +79,12 @@
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"
                 type="text/javascript">
         </script>
+
+        <script type="tempest/template" title="modelOption" class="tempest-template">
+            <option value="{% templatetag openvariable %} model {% templatetag closevariable %}">
+                {% templatetag openvariable %} model {% templatetag closevariable %}
+            </option>
+        </script>
         <script type="text/javascript">
             {% comment %}
             If we do includes for our media, we don't need to worry about
@@ -82,6 +94,7 @@
             reverses via the url template tag.
             {% endcomment %}
 
+            {% include "query_analyzer/jquery.tempest.js" %}
             {% include "query_analyzer/base.js" %}
         </script>
 

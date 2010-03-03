@@ -14,7 +14,7 @@
             <dl>
                 <dt>{% trans "SQL" %}</dt>
                 <dd>
-                    <input type="text" value="{{ sql|safe }}" name="sql" />
+                    <textarea name="sql">{{ sql|safe }}</textarea>
                     <input type="submit" value="Execute" />
                 </dd>
             </dl>

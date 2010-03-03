@@ -17,6 +17,14 @@ function getModelDetails(appLabel, modelName, success, error) {
     });
 }
 
+function log(msg) {
+    if (window.console && window.console.log) {
+        return console.log(msg);
+    } else {
+        return alert(msg);
+    }
+}
+
 function initModelSelect(selectElem) {
     return getModels(
         function (data, textStatus, xhr) {
@@ -40,7 +48,7 @@ function initModelSelect(selectElem) {
             });
         },
         function () {
-            alert("ERRORS!");
+            log("Failure fetching models.");
         }
     );
 }

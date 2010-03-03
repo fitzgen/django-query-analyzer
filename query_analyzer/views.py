@@ -2,6 +2,7 @@ from django.conf import settings
 from django.db import connection
 from django.http import HttpResponseBadRequest
 from django.shortcuts import render_to_response
+from django.template import RequestContext
 from django.utils import simplejson
 from django.utils.hashcompat import sha_constructor
 
@@ -52,4 +53,9 @@ def analyze(request):
             }
         else:
             raise InvalidSQLError("Only 'select' queries are allowed.")
-    return render_to_response('query_analyzer/analyze.html', context)
+
+    context["ADMIN_MEDIA_PREFIX"] = settings.ADMIN_MEDIA_PREFIX
+
+    return render_to_response('query_analyzer/analyze.html',
+                              context,
+                              context_instance=RequestContext(request))

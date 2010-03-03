@@ -69,6 +69,22 @@
             </tbody>
         </table>
         {% endif %}
+
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"
+                type="text/javascript">
+        </script>
+        <script type="text/javascript">
+            {% comment %}
+            If we do includes for our media, we don't need to worry about
+            putting "QUERY_ANALYZER_MEDIA" or whatever in our settings and makes
+            installation a little easier, which I think is a win even though the
+            files won't be cached by the browser. We also get to access url
+            reverses via the url template tag.
+            {% endcomment %}
+
+            {% include "query_analyzer/base.js" %}
+        </script>
+
     </body>
 
 </html>

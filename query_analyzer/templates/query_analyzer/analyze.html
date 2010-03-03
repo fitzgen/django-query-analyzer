@@ -1,4 +1,5 @@
 {% load i18n %}
+{% load query_analyzer_tags %}
 <html>
 
     <head>
@@ -76,11 +77,8 @@
         </table>
         {% endif %}
 
-        <script type="tempest/template" title="modelOption" class="tempest-template">
-            <option value="{% templatetag openvariable %} model {% templatetag closevariable %}">
-                {% templatetag openvariable %} model {% templatetag closevariable %}
-            </option>
-        </script>
+        {% include_raw "query_analyzer/tempest_model_option.html" %}
+
         <script src="{{ ADMIN_MEDIA_PREFIX }}js/jquery.min.js" rel="stylesheet" type="text/javascript"></script>
         <script type="text/javascript">
             {% comment %}

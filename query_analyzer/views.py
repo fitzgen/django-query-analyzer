@@ -17,7 +17,9 @@ def analyze(request):
     #hash = sha_constructor(settings.SECRET_KEY + sql + params).hexdigest()
     #if hash != request.GET.get('hash', ''):
         #return HttpResponseBadRequest('Tamper alert') # SQL Tampering alert
-    if sql != "":
+    if not sql:
+        context = {}
+    else:
         if sql.lower().strip().startswith('select'):
             if params:
                 params = simplejson.loads(params)
@@ -50,6 +52,4 @@ def analyze(request):
             }
         else:
             raise InvalidSQLError("Only 'select' queries are allowed.")
-    else:
-        context = {}
     return render_to_response('query_analyzer/analyze.html', context)

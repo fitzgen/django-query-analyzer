@@ -1,10 +1,14 @@
 from django.conf import settings
 from django.db import connection
-from django.http import HttpResponseBadRequest
+from django.db.models import get_model, get_models
+from django.db.models.query_utils import Q
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.utils import simplejson
 from django.utils.hashcompat import sha_constructor
+from itertools import chain
+from query_analyzer.decorators import json_view
 
 class InvalidSQLError(Exception):
     def __init__(self, value):
@@ -59,3 +63,22 @@ def analyze(request):
     return render_to_response('query_analyzer/analyze.html',
                               context,
                               context_instance=RequestContext(request))
+
+@json_view
+def model_select(request):
+    content = {
+        'models': [(model._meta.app_label, model._meta.module_name) for model in get_models()],
+    }
+    return content
+
+
+@json_view
+def model_details(request, app_label, model_name):
+    model = get_model(app_label, model_name)
+    content = {
+        'managers': [(id, name) for id, name, manager in chain(model._meta.concrete_managers,
+                                                               model._meta.abstract_managers)],
+        'fields': model._meta.get_all_field_names(),
+        'related_fields': [rel.get_accessor_name() for rel in model._meta.get_all_related_objects()],
+    }
+    return content

@@ -26,6 +26,7 @@
         {% endblocktrans %}
         {% endif %}
 
+        <h2>{{ select_result|length }} row{{ select_result|pluralize }} returned</h2>
         {% if select_result %}
         <table>
             <thead>
@@ -48,6 +49,7 @@
         {% endif %}
 
         {% if explain_result %}
+        <h2>Explanation</h2>
         <table>
             <thead>
                 <tr>

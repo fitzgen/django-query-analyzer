@@ -79,6 +79,9 @@ def model_details(request, app_label, model_name):
         'managers': [(id, name) for id, name, manager in chain(model._meta.concrete_managers,
                                                                model._meta.abstract_managers)],
         'fields': model._meta.get_all_field_names(),
-        'related_fields': [rel.get_accessor_name() for rel in model._meta.get_all_related_objects()],
+        'related_fields': [(rel.get_accessor_name(), \
+                            rel.model._meta.app_label, \
+                            rel.model._meta.module_name) \
+                           for rel in model._meta.get_all_related_objects()],
     }
     return content

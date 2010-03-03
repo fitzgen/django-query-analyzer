@@ -4,7 +4,7 @@ from functools import wraps
 
 
 def json_view(func):
-    @wraps
+    @wraps(func)
     def wrapper(*args, **kwargs):
         content = func(*args, **kwargs)
         response = HttpResponse(content_type="application/json")

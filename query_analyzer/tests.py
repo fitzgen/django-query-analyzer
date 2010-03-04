@@ -4,6 +4,7 @@ from django.utils import simplejson
 
 
 class TestViews(TestCase):
+    fixtures = ['testdata']
 
     def test_model_select(self):
         response = self.client.get(reverse('models'))

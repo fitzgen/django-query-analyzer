@@ -79,11 +79,11 @@ def analyze_queryset(request):
     headers, result, sql = _explain(connection, *queryset._as_sql(connection))
 
     context = {
-        'select_result': queryset,
+        'select_result': queryset.values_list(),
         'explain_result': result,
         'sql': sql,
-        'duration': request.GET.get('duration', 0.0),
-        'select_headers': [], #TODO
+        'duration': settings.DEBUG and connection.queries[-1]['time'] or 0.0,
+        'select_headers': [f.name for f in model._meta.fields], #maybe local_fields is better.
         'explain_headers': headers,
     }
     return render_to_response('query_analyzer/analyze.html',

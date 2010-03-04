@@ -1,20 +1,22 @@
 from django.conf import settings
-from django.db import connection
-from django.db.models import get_model, get_models
-from django.db.models.query_utils import Q
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.db import connections
+from django.db.backends.sqlite3.base import DatabaseWrapper as sqlite3
+from django.db.models import get_model
+from django.db.models import get_models
+from django.db.models.fields.related import ForeignKey
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.utils import simplejson
-from django.utils.hashcompat import sha_constructor
 from itertools import chain
 from query_analyzer.decorators import json_view
+
 
 class InvalidSQLError(Exception):
     def __init__(self, value):
         self.value = value
     def __str__(self):
         return repr(self.value)
+
 
 def analyze(request):
     sql = request.GET.get('sql', '')
@@ -30,27 +32,22 @@ def analyze(request):
                 params = simplejson.loads(params)
             else:
                 params = {}
+
+            connection = connections['default']
             cursor = connection.cursor()
+            try:
+                cursor.execute(sql, params)
+                select_headers = [d[0] for d in cursor.description]
+                select_result = cursor.fetchall()
+            finally:
+                cursor.close()
 
-            # SELECT
-            cursor.execute(sql, params)
-            select_headers = [d[0] for d in cursor.description]
-            select_result = cursor.fetchall()
-
-            # EXPLAIN
-            if settings.DATABASE_ENGINE == "sqlite3":
-                cursor.execute("EXPLAIN QUERY PLAN %s" % (sql,), params)
-            else:
-                cursor.execute("EXPLAIN %s" % (sql,), params)
-            explain_headers = [d[0] for d in cursor.description]
-            explain_result = cursor.fetchall()
-
-            cursor.close()
+            explain_headers, explain_result, sql_result = _explain(connection, sql, params)
 
             context = {
                 'select_result': select_result,
                 'explain_result': explain_result,
-                'sql': cursor.db.ops.last_executed_query(cursor, sql, params),
+                'sql': sql_result,
                 'duration': request.GET.get('duration', 0.0),
                 'select_headers': select_headers,
                 'explain_headers': explain_headers,
@@ -64,6 +61,47 @@ def analyze(request):
                               context,
                               context_instance=RequestContext(request))
 
+
+def analyze_queryset(request):
+    query = simplejson.loads(request.POST.get('query', '{}'))
+    model = get_model(query.get('app'), query.get('model'))
+    manager = getattr(model, query.get('manager', '_default_manager'))
+
+    queryset = manager.all()
+    filters = query.get('filters', [])
+    for filter in filters:
+        queryset = queryset.filter(**filter)
+    excludes = query.get('excludes', [])
+    for exclude in excludes:
+        queryset = queryset.exclude(**exclude)
+
+    connection = connections[queryset.db]
+    headers, result, sql = _explain(connection, *queryset._as_sql(connection))
+
+    context = {
+        'select_result': queryset,
+        'explain_result': result,
+        'sql': sql,
+        'duration': request.GET.get('duration', 0.0),
+        'select_headers': [], #TODO
+        'explain_headers': headers,
+    }
+    return render_to_response('query_analyzer/analyze.html',
+                              context,
+                              context_instance=RequestContext(request))
+
+def _explain(connection, sql, params):
+    cursor = connection.cursor()
+    explain = "EXPLAIN %sPLAN %s" % (isinstance(connection, sqlite3) and "QUERY " or "", sql)
+    try:
+        cursor.execute(explain, params)
+        explain_headers = [d[0] for d in cursor.description]
+        explain_result = cursor.fetchall()
+        sql = connection.ops.last_executed_query(cursor, sql, params),
+    finally:
+        cursor.close()
+    return explain_headers, explain_result, sql
+
 @json_view
 def model_select(request):
     content = {
@@ -75,13 +113,22 @@ def model_select(request):
 @json_view
 def model_details(request, app_label, model_name):
     model = get_model(app_label, model_name)
-    content = {
-        'managers': [(id, name) for id, name, manager in chain(model._meta.concrete_managers,
-                                                               model._meta.abstract_managers)],
-        'fields': model._meta.get_all_field_names(),
-        'related_fields': [(rel.get_accessor_name(), \
-                            rel.model._meta.app_label, \
-                            rel.model._meta.module_name) \
-                           for rel in model._meta.get_all_related_objects()],
-    }
-    return content
+    managers = [name for id, name, manager in chain(model._meta.concrete_managers,
+                                                    model._meta.abstract_managers)
+                if not name.startswith('_')]
+    fields = [field.name for field in model._meta.local_fields
+              if not isinstance(field, ForeignKey)]
+    # handle fields with relation (fk, m2m)
+    related_fields = [field for field in model._meta.local_fields
+                      if isinstance(field, ForeignKey)]
+    related_fields = [(field.name, field.rel.to._meta.app_label, field.rel.to._meta.module_name) \
+                      for field in chain(model._meta.many_to_many, related_fields)]
+    return dict(managers=managers, fields=fields, related_fields=related_fields)
+
+
+# dragables
+'filter', 'exclude'
+# radio button
+'count', 'select_related', 'exists'
+# checkboxes
+'reverse'

@@ -78,6 +78,9 @@
         {% endif %}
 
         {% include_raw "query_analyzer/tempest_model_option.html" %}
+        {% include_raw "query_analyzer/tempest_fields_option.html" %}
+        {% include_raw "query_analyzer/tempest_related_fields_option.html" %}
+        {% include_raw "query_analyzer/tempest_managers_option.html" %}
 
         <script src="{{ ADMIN_MEDIA_PREFIX }}js/jquery.min.js" rel="stylesheet" type="text/javascript"></script>
         <script type="text/javascript">
@@ -89,7 +92,7 @@
             reverses via the url template tag.
             {% endcomment %}
 
-            {% include "query_analyzer/jquery.tempest.js" %}
+            {% include_raw "query_analyzer/jquery.tempest.js" %}
             {% include "query_analyzer/base.js" %}
         </script>
 

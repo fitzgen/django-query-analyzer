@@ -61,6 +61,39 @@ function getAllModelDetails(models, detailsObj) {
     };
     var makeAdder = function (type) {
         return function (appName, modelName, value) {
+            // Figure out which selector to use to based on type, appName, and
+            // modelName. An example is "#auth--user-field-select"
+            var getSelectElem = function (appModel) {
+                var container = $("#" + type);
+                var elem = container.find("#" + appModel + "-" + type + "-select");
+                if (elem.length > 0) {
+                    return elem;
+                }
+                else {
+                    return elem = $("<select />")
+                        .attr({
+                            id: appModel + "-" + type + "-select",
+                        })
+                        .append($("<option> -- </option>"))
+                        .appendTo(container);
+                }
+            };
+
+            var context = {};
+            if (type === "relatedFields") {
+                context.label = value[0];
+                context.relatedApp = value[1];
+                context.relatedModel = value[2];
+                context.value = context.label;
+            }
+            else {
+                context.label = value;
+                context.value = value;
+            }
+            context.model = appName + "-" + modelName;
+
+            getSelectElem(context.model).tempest("append", type + "Option", context);
+
             detailsObj[appName][modelName][type].push(value);
         };
     };

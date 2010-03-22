@@ -12,4 +12,10 @@ installation:
     $ ln -s /path/to/django-query-analyzer/query_analyzer query_analyzer
 
 add "query_analyzer" to your installed_apps in settings.py
-include query_analyzer.urls in your project's urls.
+include query_analyzer.urls in your project's urls. eg:
+
+    (r'^query/', include("query_analyzer.urls")),
+    
+then go to:
+
+    http://your.django.site/query/basic/

@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import connections
 from django.db.backends.sqlite3.base import DatabaseWrapper as sqlite3
+from django.db.backends.postgresql_psycopg2.base import DatabaseWrapper as postgresql_psycopg2
 from django.db.models import get_model as django_get_model
 from django.db.models import get_models as django_get_models
 from django.db.models.fields.related import ForeignKey
@@ -26,7 +27,10 @@ class InvalidSQLError(Exception):
 class Analyzer(object):
     def explain(self, connection):
         cursor = connection.cursor()
-        explain_sql = "EXPLAIN %sPLAN %s" % (isinstance(connection, sqlite3) and "QUERY " or "", self.sql)
+        if isinstance(connection, postgresql_psycopg2):
+            explain_sql = "EXPLAIN %s" % self.sql
+        else:
+            explain_sql = "EXPLAIN %sPLAN %s" % (isinstance(connection, sqlite3) and "QUERY " or "", self.sql)
         try:
             cursor.execute(explain_sql, self.params)
             explain_headers = [d[0] for d in cursor.description]

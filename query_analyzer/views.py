@@ -7,7 +7,7 @@ from django.db import transaction
 @html_view("query_analyzer/basic_analyze.html")
 @transaction.commit_manually
 def basic_analyze(request):
-    form = PythonForm(request.POST or None, initial={"python":"all"})
+    form = PythonForm(request.POST or None, initial={"python":"all()"})
     result = None
     data = { "form": form, }
     if form.is_valid():

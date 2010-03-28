@@ -10,6 +10,9 @@ class PythonForm(forms.Form):
         widget=forms.Textarea(attrs={"rows":"2"}))
     
 def FieldsForm(model):
+    """
+    Dynamically create a django.forms.ModelForm instance for the given model.
+    """
     form = type("FieldsForm", (forms.ModelForm,), dict(Meta=type("Meta", (object,), dict(model=model))))
     return form()
     

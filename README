@@ -1,10 +1,10 @@
-django-query-analyzer
+Django-Query-Analyzer
 =====================
 
 This is the start of the django query analyzer project, a way to introspect the
 django ORM.
 
-installation:
+Installation:
 -------------
 
 Required: Django 1.2
@@ -17,7 +17,22 @@ add "query_analyzer" to your installed_apps in settings.py
 include query_analyzer.urls in your project's urls. eg:
 
     (r'^query/', include("query_analyzer.urls")),
-    
+
 then go to:
 
     http://your.django.site/query/basic/
+
+Misc. Installation Notes
+------------------------
+
+The admin application must be enabled the "new" way in urls.py. Use this style:
+
+    # ...
+    (r'^admin/', include(admin.site.urls)),
+    # ...
+
+and NOT this old way:
+
+    # ...
+    ("(r'^admin/(.*)', admin.site.root),")
+    # ...
